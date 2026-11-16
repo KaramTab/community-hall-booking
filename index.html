@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Community Hall Booking</title>
+<style>
+  :root {
+    --bg: #f4f6f1;
+    --card: #ffffff;
+    --ink: #2f3a33;
+    --muted: #6b776e;
+    --line: #e3e8e0;
+    --teal: #3e7d6f;
+    --teal-soft: #e4f0ec;
+    --amber-soft: #fdf3e0;
+    --amber-ink: #9a6b1f;
+    --green-soft: #e7f2e4;
+    --green-ink: #4a7c3a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  .page { max-width: 560px; margin: 0 auto; padding: 16px 16px 48px; }
+
+  header { text-align: center; padding: 20px 0 8px; }
+  header .hall-icon {
+    width: 52px; height: 52px; margin: 0 auto 10px;
+    background: var(--teal-soft); color: var(--teal);
+    border-radius: 16px; display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+  }
+  h1 { font-size: 1.35rem; margin: 0 0 4px; }
+  header p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+
+  section {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 18px 16px;
+    margin-top: 16px;
+  }
+  .section-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 12px; }
+  .section-head .num {
+    flex: none; width: 26px; height: 26px; border-radius: 50%;
+    background: var(--teal-soft); color: var(--teal);
+    font-size: 0.8rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    align-self: center;
+  }
+  .section-head h2 { font-size: 1.05rem; margin: 0; }
+  .section-head small { color: var(--muted); }
+
+  /* Filter */
+  .filter-row { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+  .filter-btn {
+    flex: 1; min-width: 90px;
+    padding: 9px 10px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    background: #fbfcfa;
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn.active {
+    background: var(--teal); border-color: var(--teal); color: #fff;
+  }
+
+  /* Slot list */
+  .slot-list { display: flex; flex-direction: column; gap: 10px; }
+  .slot-card {
+    width: 100%; text-align: left;
+    display: flex; align-items: center; gap: 12px;
+    background: #fbfcfa;
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .slot-card:hover { border-color: var(--teal); }
+  .slot-card.selected {
+    border-color: var(--teal);
+    background: var(--teal-soft);
+    box-shadow: 0 0 0 1px var(--teal) inset;
+  }
+  .slot-date {
+    flex: none; width: 56px; text-align: center;
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 6px 4px;
+  }
+  .slot-date .day { font-size: 0.72rem; font-weight: 700; color: var(--teal); text-transform: uppercase; }
+  .slot-date .num { font-size: 1.1rem; font-weight: 700; color: var(--ink); }
+  .slot-info { flex: 1; min-width: 0; }
+  .slot-info .hall { font-weight: 700; font-size: 0.95rem; }
+  .slot-info .time { color: var(--muted); font-size: 0.85rem; }
+  .badge {
+    flex: none; font-size: 0.72rem; font-weight: 700;
+    padding: 4px 10px; border-radius: 999px;
+  }
+  .badge.dewan { background: var(--amber-soft); color: var(--amber-ink); }
+  .badge.surau { background: var(--green-soft); color: var(--green-ink); }
+  .slot-card .check { flex: none; font-size: 1rem; color: var(--teal); display: none; }
+  .slot-card.selected .check { display: inline; }
+
+  /* Form */
+  .field { margin-bottom: 14px; }
+  .field label { display: block; font-size: 0.82rem; font-weight: 600; color: var(--muted); margin-bottom: 5px; }
+  .field input, .field select {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    background: #fbfcfa;
+    font: inherit;
+    color: var(--ink);
+  }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--teal); }
+  .slot-preview {
+    background: var(--teal-soft);
+    border: 1.5px dashed var(--teal);
+    border-radius: 10px;
+    padding: 11px 12px;
+    font-size: 0.9rem;
+    color: var(--ink);
+  }
+  .slot-preview .hint { color: var(--muted); font-size: 0.82rem; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .submit-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--teal);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font: inherit;
+    font-weight: 700;
+    font-size: 0.98rem;
+    cursor: pointer;
+  }
+  .submit-btn:hover { filter: brightness(1.06); }
+  .form-error {
+    display: none;
+    background: #fdeceb; color: #a33;
+    border: 1px solid #f3c9c5;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    margin-bottom: 14px;
+  }
+
+  /* Status */
+  .status-empty { color: var(--muted); font-size: 0.9rem; text-align: center; padding: 12px 0; }
+  .status-card { display: none; }
+  .status-card.show { display: block; }
+  .confirm-banner {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--green-soft); color: var(--green-ink);
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-weight: 700;
+    font-size: 0.92rem;
+    margin-bottom: 14px;
+  }
+  .confirm-banner .tick {
+    flex: none; width: 28px; height: 28px; border-radius: 50%;
+    background: var(--green-ink); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.9rem;
+  }
+  .summary-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .summary-table th {
+    text-align: left; vertical-align: top;
+    color: var(--muted); font-weight: 600;
+    padding: 7px 12px 7px 0; width: 38%;
+  }
+  .summary-table td { padding: 7px 0; font-weight: 600; }
+  .summary-table tr + tr th, .summary-table tr + tr td { border-top: 1px solid var(--line); }
+  .ref-pill {
+    display: inline-block;
+    background: var(--teal-soft); color: var(--teal);
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+  }
+  .status-note { color: var(--muted); font-size: 0.78rem; margin-top: 12px; }
+
+  @media (max-width: 380px) {
+    .grid-2 { grid-template-columns: 1fr; }
+    .badge { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div class="hall-icon">🏛️</div>
+    <h1>Community Hall Booking</h1>
+    <p>Check free dewan &amp; surau slots this week and send a booking request.</p>
+  </header>
+
+  <!-- 1. Available slots -->
+  <section id="slots-section">
+    <div class="section-head">
+      <span class="num">1</span>
+      <h2>Available slots <small>· this week</small></h2>
+    </div>
+    <div class="filter-row" id="filter-row">
+      <button class="filter-btn active" data-filter="all">All halls</button>
+      <button class="filter-btn" data-filter="dewan">Dewan</button>
+      <button class="filter-btn" data-filter="surau">Surau</button>
+    </div>
+    <div class="slot-list" id="slot-list"></div>
+  </section>
+
+  <!-- 2. Booking request -->
+  <section id="booking-section">
+    <div class="section-head">
+      <span class="num">2</span>
+      <h2>Booking request</h2>
+    </div>
+    <form id="booking-form" novalidate>
+      <div class="field">
+        <label for="slot-preview">Selected slot</label>
+        <div class="slot-preview" id="slot-preview">
+          <span id="slot-preview-text">No slot selected yet — tap a free slot above.</span>
+        </div>
+      </div>
+      <div class="field">
+        <label for="name">Your name</label>
+        <input type="text" id="name" placeholder="e.g. Ahmad bin Ismail" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label for="purpose">Purpose of booking</label>
+        <select id="purpose">
+          <option value="">Choose a purpose…</option>
+          <option>Kenduri doa selamat</option>
+          <option>Majlis tahlil / doa</option>
+          <option>Mesyuarat penduduk (RA)</option>
+          <option>Kelas agama / kuliah</option>
+          <option>Hari keluarga komuniti</option>
+          <option>Lain-lain aktiviti</option>
+        </select>
+      </div>
+      <div class="form-error" id="form-error"></div>
+      <button type="submit" class="submit-btn">Submit booking request</button>
+    </form>
+  </section>
+
+  <!-- 3. Request status -->
+  <section id="status-section">
+    <div class="section-head">
+      <span class="num">3</span>
+      <h2>Request status</h2>
+    </div>
+    <div class="status-empty" id="status-empty">Your request summary will appear here after you submit.</div>
+    <div class="status-card" id="status-card">
+      <div class="confirm-banner">
+        <span class="tick">✓</span>
+        <span>Request submitted — pending approval by the hall committee.</span>
+      </div>
+      <table class="summary-table">
+        <tr><th>Reference no.</th><td><span class="ref-pill" id="sum-ref"></span></td></tr>
+        <tr><th>Hall</th><td id="sum-hall"></td></tr>
+        <tr><th>Date</th><td id="sum-date"></td></tr>
+        <tr><th>Time</th><td id="sum-time"></td></tr>
+        <tr><th>Requested by</th><td id="sum-name"></td></tr>
+        <tr><th>Purpose</th><td id="sum-purpose"></td></tr>
+      </table>
+      <p class="status-note">This is a demo preview — requests are not saved and no data leaves your device.</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // ---- Sample data (made-up, Malaysia community setting) ----
+  // Dates are generated from the upcoming week so the list always looks current.
+  const dayNames = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const malayDays = ["Ahad","Isnin","Selasa","Rabu","Khamis","Jumaat","Sabtu"];
+  const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+  function upcomingDay(offset) {
+    const d = new Date();
+    d.setDate(d.getDate() + offset);
+    return {
+      dayEn: dayNames[d.getDay()],
+      dayMs: malayDays[d.getDay()],
+      dayNum: d.getDate(),
+      month: monthNames[d.getMonth()],
+      iso: d.toISOString().slice(0, 10)
+    };
+  }
+
+  const slots = [
+    {
+      id: 1, hall: "Dewan Seri Melati", type: "dewan", zone: "Taman Seri Melati, Kuala Lumpur",
+      date: upcomingDay(1), start: "9:00 AM", end: "1:00 PM"
+    },
+    {
+      id: 2, hall: "Surau Al-Ikhlas", type: "surau", zone: "Taman Bukit Jaya, Selangor",
+      date: upcomingDay(2), start: "8:00 PM", end: "10:00 PM"
+    },
+    {
+      id: 3, hall: "Dewan Orkid", type: "dewan", zone: "Taman Orkid, Johor Bahru",
+      date: upcomingDay(3), start: "2:00 PM", end: "6:00 PM"
+    },
+    {
+      id: 4, hall: "Surau An-Nur", type: "surau", zone: "Taman Putra, Kuantan",
+      date: upcomingDay(4), start: "10:00 AM", end: "12:00 PM"
+    },
+    {
+      id: 5, hall: "Dewan Seri Melati", type: "dewan", zone: "Taman Seri Melati, Kuala Lumpur",
+      date: upcomingDay(5), start: "7:00 PM", end: "10:00 PM"
+    }
+  ];
+
+  // ---- State ----
+  let activeFilter = "all";
+  let selectedSlot = null;
+
+  // ---- Render slot list ----
+  const slotList = document.getElementById("slot-list");
+
+  function renderSlots() {
+    const visible = slots.filter(s => activeFilter === "all" || s.type === activeFilter);
+    slotList.innerHTML = "";
+    if (visible.length === 0) {
+      slotList.innerHTML = '<div class="status-empty">No free slots for this hall this week.</div>';
+      return;
+    }
+    visible.forEach(slot => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "slot-card" + (selectedSlot && selectedSlot.id === slot.id ? " selected" : "");
+      btn.innerHTML = `
+        <span class="slot-date">
+          <div class="day">${slot.date.dayEn}</div>
+          <div class="num">${slot.date.dayNum}</div>
+        </span>
+        <span class="slot-info">
+          <span class="hall">${slot.hall}</span>
+          <div class="time">${slot.start} – ${slot.end} · ${slot.zone}</div>
+        </span>
+        <span class="badge ${slot.type}">${slot.type === "dewan" ? "Dewan" : "Surau"}</span>
+        <span class="check">●</span>
+      `;
+      btn.addEventListener("click", () => selectSlot(slot));
+      slotList.appendChild(btn);
+    });
+  }
+
+  function selectSlot(slot) {
+    selectedSlot = slot;
+    document.getElementById("slot-preview-text").innerHTML =
+      `<strong>${slot.hall}</strong> · ${slot.date.dayEn} ${slot.date.dayNum} ${slot.date.month} · ${slot.start} – ${slot.end}`;
+    renderSlots();
+    // Gentle nudge towards the form after picking
+    document.getElementById("booking-section").scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  // ---- Filter by hall ----
+  document.getElementById("filter-row").addEventListener("click", (e) => {
+    const btn = e.target.closest(".filter-btn");
+    if (!btn) return;
+    activeFilter = btn.dataset.filter;
+    document.querySelectorAll(".filter-btn").forEach(b => b.classList.toggle("active", b === btn));
+    renderSlots();
+  });
+
+  // ---- Submit request ----
+  const form = document.getElementById("booking-form");
+  const formError = document.getElementById("form-error");
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("name").value.trim();
+    const purpose = document.getElementById("purpose").value;
+
+    const problems = [];
+    if (!selectedSlot) problems.push("tap a free slot in section 1");
+    if (!name) problems.push("fill in your name");
+    if (!purpose) problems.push("choose a purpose");
+    if (problems.length > 0) {
+      formError.textContent = "Please " + problems.join(", ") + ".";
+      formError.style.display = "block";
+      return;
+    }
+    formError.style.display = "none";
+
+    // Fill the summary
+    const ref = "CHB-" + new Date().getFullYear() + "-" + String(1000 + selectedSlot.id * 137).slice(0, 4);
+    document.getElementById("sum-ref").textContent = ref;
+    document.getElementById("sum-hall").textContent = selectedSlot.hall + " (" + (selectedSlot.type === "dewan" ? "Dewan" : "Surau") + ")";
+    document.getElementById("sum-date").textContent = selectedSlot.date.dayMs + ", " + selectedSlot.date.dayNum + " " + selectedSlot.date.month;
+    document.getElementById("sum-time").textContent = selectedSlot.start + " – " + selectedSlot.end;
+    document.getElementById("sum-name").textContent = name;
+    document.getElementById("sum-purpose").textContent = purpose;
+
+    document.getElementById("status-empty").style.display = "none";
+    document.getElementById("status-card").classList.add("show");
+    document.getElementById("status-section").scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  // ---- Initial render: examples visible on load ----
+  renderSlots();
+</script>
+</body>
+</html>
